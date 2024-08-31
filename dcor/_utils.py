@@ -3,17 +3,28 @@
 from __future__ import annotations
 
 import enum
-from typing import TYPE_CHECKING, Any, TypeVar
+import warnings
+from typing import TYPE_CHECKING, Any, Iterable, TypeVar, Union
 
 import numpy as np
+from array_api_compat import (
+    array_namespace as array_namespace_compat,
+    numpy as numpy_namespace,
+)
 
 # TODO: Change in the future
 if TYPE_CHECKING:
-    ArrayType = np.typing.NDArray[float]
+    ArrayType = np.typing.NDArray[np.number[Any]]
 else:
     ArrayType = np.ndarray
 
 T = TypeVar("T", bound=ArrayType)
+RandomLike = Union[
+    np.random.RandomState,
+    np.random.Generator,
+    int,
+    None,
+]
 
 
 class CompileMode(enum.Enum):
@@ -60,28 +71,19 @@ class RowwiseMode(enum.Enum):
 
 
 # TODO: Change the return type in the future
-def get_namespace(*xs: Any) -> Any:
+def array_namespace(*xs: Any) -> Any:
     # `xs` contains one or more arrays, or possibly Python scalars (accepting
     # those is a matter of taste, but doesn't seem unreasonable).
-    namespaces = {
-        x.__array_namespace__()
-        for x in xs if hasattr(x, '__array_namespace__')
-    }
-
-    if not namespaces:
-        # one could special-case np.ndarray above or use np.asarray here if
-        # older numpy versions need to be supported.
-        return np
-
-    if len(namespaces) != 1:
-        raise ValueError(
-            f"Multiple namespaces for array inputs: {namespaces}")
-
-    xp, = namespaces
-    if xp is None:
-        raise ValueError("The input is not a supported array type")
-
-    return xp
+    try:
+        return array_namespace_compat(*xs)
+    except TypeError:
+        warnings.warn(
+            "Passing non-array objects to functions in the 'dcor' "
+            "package is deprecated and will be removed in a future version",
+            DeprecationWarning,
+            stacklevel=3,  # TODO: Use skip_file_prefixes in Python 3.12?
+        )
+        return numpy_namespace
 
 
 def _sqrt(x: T) -> T:
@@ -99,7 +101,7 @@ def _sqrt(x: T) -> T:
 
     """
     # Replace negative values with 0
-    xp = get_namespace(x)
+    xp = array_namespace(x)
     x_copy = xp.asarray(x + 0)
     x_copy[x_copy < 0] = 0
 
@@ -109,18 +111,37 @@ def _sqrt(x: T) -> T:
         return x_copy**0.5
 
 
-def _transform_to_2d(t: T) -> T:
+def _transform_to_1d(*args: T) -> Iterable[T]:
+    """Convert column matrices to vectors, to always have a 1d shape."""
+    xp = array_namespace(*args)
+
+    for array in args:
+        array = xp.asarray(array)
+
+        dim = len(array.shape)
+        assert dim <= 2
+
+        if dim == 2:
+            assert array.shape[1] == 1
+            array = xp.reshape(array, -1)
+
+        yield array
+
+
+def _transform_to_2d(*args: T) -> Iterable[T]:
     """Convert vectors to column matrices, to always have a 2d shape."""
-    xp = get_namespace(t)
-    t = xp.asarray(t)
+    xp = array_namespace(*args)
 
-    dim = len(t.shape)
-    assert dim <= 2
+    for array in args:
+        array = xp.asarray(array)
 
-    if dim < 2:
-        t = xp.expand_dims(t, axis=1)
+        dim = len(array.shape)
+        assert dim <= 2
 
-    return t
+        if dim < 2:
+            array = xp.expand_dims(array, axis=1)
+
+        yield array
 
 
 def _can_be_numpy_double(x: ArrayType) -> bool:
@@ -132,7 +153,7 @@ def _can_be_numpy_double(x: ArrayType) -> bool:
     converted to double (if the roundtrip conversion works).
 
     """
-    if get_namespace(x) != np:
+    if array_namespace(x) != np:
         return False
 
     return (
@@ -147,7 +168,7 @@ def _can_be_numpy_double(x: ArrayType) -> bool:
 
 
 def _random_state_init(
-    random_state: np.random.RandomState | np.random.Generator | int | None,
+    random_state: RandomLike,
 ) -> np.random.RandomState | np.random.Generator:
     """
     Initialize a RandomState object.

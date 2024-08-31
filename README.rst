@@ -1,9 +1,9 @@
 dcor
 ====
 
-|build-status| |docs| |coverage| |pypi| |conda|
+|tests| |docs| |coverage| |repostatus| |versions| |pypi| |conda| |zenodo|
 
-dcor: distance correlation and related E-statistics in Python.
+dcor: distance correlation and energy statistics in Python.
 
 E-statistics are functions of distances between statistical observations
 in metric spaces.
@@ -48,7 +48,46 @@ use the :code:`conda-forge` channel.
 Requirements
 ------------
 
-dcor is available in Python 3.5 or above and in Python 2.7, in all operating systems.
+dcor is available in Python 3.8 or above in all operating systems.
+The package dcor depends on the following libraries:
+
+- numpy
+- numba >= 0.51
+- scipy
+- joblib
+
+Citing dcor
+===========
+
+Please, if you find this software useful in your work, reference it citing the following paper:
+
+.. code-block::
+  
+  @article{ramos-carreno+torrecilla_2023_dcor,
+    author = {Ramos-Carreño, Carlos and Torrecilla, José L.},
+    doi = {10.1016/j.softx.2023.101326},
+    journal = {SoftwareX},
+    month = {2},
+    title = {{dcor: Distance correlation and energy statistics in Python}},
+    url = {https://www.sciencedirect.com/science/article/pii/S2352711023000225},
+    volume = {22},
+    year = {2023},
+  }
+
+You can additionally cite the software repository itself using:
+
+.. code-block::
+
+  @misc{ramos-carreno_2022_dcor,
+    author = {Ramos-Carreño, Carlos},
+    doi = {10.5281/zenodo.3468124},
+    month = {3},
+    title = {dcor: distance correlation and energy statistics in Python},
+    url = {https://github.com/vnmabus/dcor},
+    year = {2022}
+  }
+
+If you want to reference a particular version for reproducibility, check the version-specific DOIs available in Zenodo.
 
 Documentation
 =============
@@ -72,10 +111,10 @@ References
            Statistics, 35(6):2769–2794, 12 2007.
            doi:10.1214/009053607000000505.
 
-.. |build-status| image:: https://api.travis-ci.com/vnmabus/dcor.svg?branch=master
-    :alt: build status
+.. |tests| image:: https://github.com/vnmabus/dcor/actions/workflows/main.yml/badge.svg
+    :alt: Tests
     :scale: 100%
-    :target: https://travis-ci.com/vnmabus/dcor
+    :target: https://github.com/vnmabus/dcor/actions/workflows/main.yml
 
 .. |docs| image:: https://readthedocs.org/projects/dcor/badge/?version=latest
     :alt: Documentation Status
@@ -87,12 +126,25 @@ References
     :scale: 100%
     :target: https://codecov.io/gh/vnmabus/dcor/branch/develop
     
+.. |repostatus| image:: https://www.repostatus.org/badges/latest/active.svg
+   :alt: Project Status: Active – The project has reached a stable, usable state and is being actively developed.
+   :target: https://www.repostatus.org/#active
+   
+.. |versions| image:: https://img.shields.io/pypi/pyversions/dcor
+   :alt: PyPI - Python Version
+   :scale: 100%
+    
 .. |pypi| image:: https://badge.fury.io/py/dcor.svg
     :alt: Pypi version
     :scale: 100%
     :target: https://pypi.python.org/pypi/dcor/
     
-.. |conda| image:: https://anaconda.org/conda-forge/dcor/badges/installer/conda.svg   
+.. |conda| image:: https://img.shields.io/conda/vn/conda-forge/dcor
     :alt: Available in Conda
     :scale: 100%
-    :target: https://conda.anaconda.org/conda-forge
+    :target: https://anaconda.org/conda-forge/dcor
+    
+.. |zenodo| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.3468124.svg
+    :alt: Zenodo DOI
+    :scale: 100%
+    :target: https://doi.org/10.5281/zenodo.3468124
